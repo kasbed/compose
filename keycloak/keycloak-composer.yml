@@ -1,0 +1,37 @@
+version: '3.9'
+
+volumes:
+  postgres_data:
+      driver: local
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_DB}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+    networks:
+      - keycloak-network
+
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: keycloak-api-auth
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: ${POSTGRESQL_DB}
+      DB_USER: ${POSTGRESQL_USER}
+      DB_PASSWORD: ${POSTGRESQL_PASS}
+      KEYCLOAK_ADMIN: ${USER_KEYCLOAK}
+      KEYCLOAK_ADMIN_PASSWORD: ${PASS_KEYCLOAK}
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "28080:8080"
+    networks:
+      - keycloak-network
+    command: "start-dev"
+
+networks:
+  keycloak-network:
